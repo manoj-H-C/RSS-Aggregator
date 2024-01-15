@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/manoj-H-C/rssagg/internal/auth"
 	"github.com/manoj-H-C/rssagg/internal/database"
 )
 
@@ -20,7 +19,7 @@ func (apicfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	params := parameters{}
 	err := decoder.Decode(&params)
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %s", err))
+		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
 		return
 	}
 	user, err := apicfg.DB.CreateUser(r.Context(), database.CreateUserParams{
@@ -30,23 +29,14 @@ func (apicfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		Name:      params.Name,
 	})
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %s", err))
+		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
 		return
 	}
 	respondWithJSON(w, 200, databaseUserToUser(user))
 }
 
-func (apicfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request) {
-	apikey, err := auth.GetAPIKey(r.Header)
-	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Auth error: %s", err))
-		return
-	}
-	user, err := apicfg.DB.GetUserByAPIKey(r.Context(), apikey)
-	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("couldn't get user: %s", err))
-		return
-	}
+func (apicfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
+
 	respondWithJSON(w, 200, databaseUserToUser(user))
 
 }
